@@ -2,28 +2,36 @@
 
 A local-first YouTube subscription feed built with Next.js, SQLite, and the YouTube Data API.
 
-YouTube Feed retrieves recent uploads from your YouTube subscriptions, stores them in a local SQLite database, and provides a simple text-focused interface for viewing new videos.
+YouTube Feed authenticates with YouTube, retrieves subscribed channels and recent uploads, stores them in a local SQLite database, and provides a simple text-focused interface for viewing new videos.
 
-The project is designed to keep the web interface separate from YouTube itself: the application reads from the local database rather than querying the YouTube API every time the page loads.
+The project is designed to keep the web interface separate from YouTube itself: synchronization happens independently, and the application reads from the local database rather than querying the YouTube API every time the page loads.
 
 ## Status
 
 🚧 **Early development**
 
-The initial project structure is currently being built. Features described below may not yet be implemented.
+The database, YouTube OAuth flow, subscription import, recent-upload synchronization, and manual sync command are working.
+
+The next development stage is building the Next.js feed UI from the local SQLite database.
+
+## Current Features
+
+- YouTube OAuth 2.0 authentication
+- Import subscribed YouTube channels
+- Subscription pagination
+- Retrieve recent uploads from subscribed channels
+- Store channels and videos in SQLite
+- Manual YouTube synchronization
+- Duplicate-safe channel and video updates
+- Local-first database architecture
 
 ## Planned Features
 
-- Authenticate with YouTube using OAuth 2.0
-- Import subscribed YouTube channels
-- Retrieve recent uploads
-- Store channels and videos in SQLite
 - Simple text-focused subscription feed
 - Direct links to videos on YouTube
 - Separate views for regular videos and Shorts
 - Configurable Shorts behaviour
 - Local settings
-- Manual YouTube synchronization
 - Optional scheduled synchronization
 - Compact feed suitable for use by a status board
 
@@ -32,7 +40,7 @@ The initial project structure is currently being built. Features described below
 ```text
 YouTube Data API
        ↓
-Node.js sync script
+OAuth + Node.js sync script
        ↓
 SQLite database
        ↓
@@ -41,9 +49,9 @@ Next.js application
 Subscription feed / Status board
 ```
 
-The YouTube API is used during synchronization. The application itself reads cached data from SQLite.
+The YouTube API is used only during synchronization.
 
-This allows the local feed to remain available even when a synchronization is not currently running.
+The Next.js application reads cached channel and video information from SQLite. This keeps page rendering independent from YouTube API availability and avoids making API requests whenever the feed is opened.
 
 ## Tech Stack
 
@@ -51,8 +59,10 @@ This allows the local feed to remain available even when a synchronization is no
 - [React](https://react.dev/)
 - JavaScript
 - SQLite
+- better-sqlite3
 - [YouTube Data API v3](https://developers.google.com/youtube/v3)
 - OAuth 2.0
+- googleapis
 
 ## Requirements
 
@@ -77,10 +87,10 @@ npm install
 Create your local environment file:
 
 ```bash
-cp .env.example .env
+cp .env.example .env.local
 ```
 
-Configure the required values in `.env`.
+Configure the required values in `.env.local`.
 
 Example:
 
@@ -92,7 +102,19 @@ YOUTUBE_REDIRECT_URI=http://localhost:3000/api/auth/youtube/callback
 DATABASE_PATH=./data/youtube.db
 ```
 
-**Do not commit your `.env` file, OAuth credentials, tokens, or personal SQLite database to Git.**
+**Do not commit your `.env.local` file, OAuth credentials, tokens, or personal SQLite database to Git.**
+
+Initialize the local database:
+
+```bash
+npm run db:init
+```
+
+Apply any available migrations:
+
+```bash
+npm run db:migrate
+```
 
 Start the development server:
 
@@ -105,6 +127,20 @@ Then open:
 ```text
 http://localhost:3000
 ```
+
+Authorize the application with YouTube:
+
+```text
+http://localhost:3000/api/auth/youtube
+```
+
+After authorization, run the manual synchronization:
+
+```bash
+npm run sync
+```
+
+The synchronization command imports your subscribed channels and recent uploads into the local SQLite database.
 
 ## Environment Variables
 
@@ -120,30 +156,88 @@ An `.env.example` file is included as a template.
 
 Never place real credentials in `.env.example`.
 
+## Database
+
+The application uses a local SQLite database.
+
+Current data includes:
+
+- OAuth tokens
+- Subscribed YouTube channels
+- Recent videos
+
+The current database structure is documented in:
+
+```text
+database/schema.sql
+```
+
+Database changes for existing installations are stored in:
+
+```text
+database/migrations/
+```
+
+The local SQLite database is intentionally excluded from Git.
+
+Anyone cloning the project can create their own database using the included schema and migrations.
+
+## Synchronization
+
+YouTube synchronization currently runs manually:
+
+```bash
+npm run sync
+```
+
+The synchronization process:
+
+```text
+Load saved OAuth credentials
+        ↓
+Retrieve all YouTube subscriptions
+        ↓
+Store/update subscribed channels
+        ↓
+Find each channel's uploads playlist
+        ↓
+Retrieve recent uploads
+        ↓
+Store/update videos in SQLite
+```
+
+Channel and video records use upserts so repeated synchronization does not create duplicate entries.
+
+Automatic scheduled synchronization is planned for a later MVP.
+
 ## Data and Privacy
 
 YouTube Feed is intended to be local-first.
 
-Your local database, OAuth credentials, authentication tokens, and subscription data should remain on your own system and are not intended to be included in the Git repository.
+Your local database, OAuth credentials, authentication tokens, and subscription data remain on your own system and are not intended to be included in the Git repository.
 
-Anyone cloning the project should configure their own Google API credentials and generate their own local database.
+Anyone cloning the project should configure their own Google API credentials, authorize their own YouTube account, and generate their own local database.
 
 ## Development Roadmap
 
-### MVP 1 — Project and Database
+### MVP 1 — Project and Database ✅
 
 - Set up Next.js
 - Configure SQLite
 - Create the initial database schema
 - Add environment configuration
+- Add database migrations
 
-### MVP 2 — YouTube Authentication and Sync
+### MVP 2 — YouTube Authentication and Sync ✅
 
 - Implement OAuth 2.0
+- Store OAuth credentials locally
 - Retrieve subscriptions
+- Support subscription pagination
 - Retrieve recent uploads
 - Add a manual Node.js synchronization command
 - Store results in SQLite
+- Prevent duplicate channel and video records
 
 ### MVP 3 — Feed
 
@@ -197,7 +291,7 @@ Anyone cloning the project should configure their own Google API credentials and
 
 OAuth client secrets, API keys, access tokens, refresh tokens, and local databases must not be committed to the repository.
 
-Use `.env` for local secrets and `.env.example` to document the variables required by the application.
+Use `.env.local` for local secrets and `.env.example` to document the variables required by the application.
 
 ## License
 
