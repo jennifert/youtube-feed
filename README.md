@@ -33,12 +33,12 @@ The next development stage is building the Next.js feed UI from the local SQLite
 - Manual YouTube synchronization
 - Duplicate-safe channel and video updates
 - Local-first database architecture
-
-## Planned Features
-
 - Simple text-focused subscription feed
 - Direct links to videos on YouTube
 - Separate views for regular videos and Shorts
+
+## Planned Features
+
 - Configurable Shorts behaviour
 - Local settings
 - Optional scheduled synchronization
@@ -259,7 +259,7 @@ Anyone cloning the project should configure their own Google API credentials, au
 
 - Identify likely Shorts using available API data
 - Add All, Videos, and Shorts views
-- Add configurable Shorts behaviour
+- Support filtering the feed by video type
 
 ### MVP 5 — Settings
 
