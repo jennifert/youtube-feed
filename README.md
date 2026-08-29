@@ -1,5 +1,14 @@
 # YouTube Feed
 
+[![Next.js](https://img.shields.io/badge/Next.js-16-black?logo=nextdotjs)](https://nextjs.org/)
+[![React](https://img.shields.io/badge/React-19-blue?logo=react)](https://react.dev/)
+[![JavaScript](https://img.shields.io/badge/JavaScript-ESM-yellow?logo=javascript)](https://developer.mozilla.org/en-US/docs/Web/JavaScript)
+[![Pico CSS](https://img.shields.io/badge/Pico_CSS-v2-0E7490)](https://picocss.com/)
+[![SQLite](https://img.shields.io/badge/SQLite-local--first-003B57?logo=sqlite)](https://sqlite.org/)
+[![YouTube Data API](https://img.shields.io/badge/YouTube-Data_API_v3-red?logo=youtube)](https://developers.google.com/youtube/v3)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](./LICENSE)
+[![Release](https://img.shields.io/github/v/release/jennifert/youtube-feed?include_prereleases&label=release)](https://github.com/jennifert/youtube-feed/releases)
+
 A local-first YouTube subscription feed built with Next.js, SQLite, and the YouTube Data API.
 
 YouTube Feed authenticates with YouTube, retrieves subscribed channels and recent uploads, stores them in a local SQLite database, and provides a simple text-focused interface for viewing new videos.
