@@ -17,15 +17,22 @@ export async function saveSettings(formData) {
         feedSize < 10 ||
         feedSize > 200
     ) {
-        throw new Error("Invalid feed size.");
+        redirect("/settings?error=feed_size");
     }
 
     if (!validDefaultViews.includes(defaultView)) {
-        throw new Error("Invalid default view.");
+        redirect("/settings?error=default_view");
     }
 
     if (!validShortsBehaviours.includes(shortsBehaviour)) {
-        throw new Error("Invalid Shorts behaviour.");
+        redirect("/settings?error=shorts_behavior");
+    }
+
+    if (
+        shortsBehaviour === "hide" &&
+        defaultView === "shorts"
+    ) {
+        redirect("/settings?error=shorts_default");
     }
 
     const db = openDatabase();

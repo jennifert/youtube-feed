@@ -21,7 +21,7 @@ The project is designed to keep the web interface separate from YouTube itself: 
 
 The database, YouTube OAuth flow, subscription import, recent-upload synchronization, manual sync command, feed UI, and settings system are working.
 
-The next development stage is polishing the feed UI and improving presentation.
+The next development stage is adding optional scheduled synchronization.
 
 ## Current Features
 
@@ -35,15 +35,19 @@ The next development stage is polishing the feed UI and improving presentation.
 - Local-first database architecture
 - Simple text-focused subscription feed
 - Direct links to videos on YouTube
+- Direct links to YouTube channels
 - Separate views for regular videos and Shorts
 - Configurable feed size
 - Configurable default feed view
 - Configurable Shorts visibility
+- Relative publication times
+- Previous and next feed pagination
+- Last synchronization information
+- Settings validation and status messages
+- Responsive layout
 
 ## Planned Features
 
-- Configurable Shorts behaviour
-- Local settings
 - Optional scheduled synchronization
 - Compact feed suitable for use by a status board
 
@@ -177,6 +181,7 @@ Current data includes:
 - OAuth tokens
 - Subscribed YouTube channels
 - Recent videos
+- Application settings
 
 The current database structure is documented in:
 
@@ -271,7 +276,7 @@ Anyone cloning the project should configure their own Google API credentials, au
 - Configure default view
 - Configure Shorts behaviour
 
-### MVP 6 — Feed Polish
+### MVP 6 — Feed Polish ✅
 
 - Relative publication times
 - Pagination or load-more support

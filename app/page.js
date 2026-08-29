@@ -1,5 +1,62 @@
 import Link from "next/link";
 import { openDatabase } from "../lib/db";
+import { Temporal } from "@js-temporal/polyfill";
+
+function formatRelativeTime(dateTime) {
+  const normalizedDateTime =
+    dateTime.includes("T")
+      ? dateTime
+      : `${dateTime.replace(" ", "T")}Z`;
+
+  const published = Temporal.Instant.from(normalizedDateTime);
+  const now = Temporal.Now.instant();
+
+  const seconds = Math.floor(
+    (now.epochMilliseconds - published.epochMilliseconds) / 1000
+  );
+
+  const formatter = new Intl.RelativeTimeFormat("en", {
+    numeric: "auto",
+  });
+
+  if (seconds < 60) {
+    return formatter.format(-seconds, "second");
+  }
+
+  const minutes = Math.floor(seconds / 60);
+
+  if (minutes < 60) {
+    return formatter.format(-minutes, "minute");
+  }
+
+  const hours = Math.floor(minutes / 60);
+
+  if (hours < 24) {
+    return formatter.format(-hours, "hour");
+  }
+
+  const days = Math.floor(hours / 24);
+
+  if (days < 7) {
+    return formatter.format(-days, "day");
+  }
+
+  const weeks = Math.floor(days / 7);
+
+  if (days < 30) {
+    return formatter.format(-weeks, "week");
+  }
+
+  const months = Math.floor(days / 30);
+
+  if (months < 12) {
+    return formatter.format(-months, "month");
+  }
+
+  const years = Math.floor(days / 365);
+
+  return formatter.format(-years, "year");
+}
 
 export default async function Home({ searchParams }) {
   const params = await searchParams;
@@ -47,6 +104,15 @@ export default async function Home({ searchParams }) {
     typeFilter = "AND youtube_videos.is_short = 0";
   }
 
+  const requestedPage = Number(params?.page ?? 1);
+
+  const page =
+    Number.isInteger(requestedPage) && requestedPage > 0
+      ? requestedPage
+      : 1;
+
+  const offset = (page - 1) * settings.feed_size;
+
   const videos = db
     .prepare(`
             SELECT
@@ -56,6 +122,7 @@ export default async function Home({ searchParams }) {
                 youtube_videos.url,
                 youtube_videos.duration_seconds,
                 youtube_videos.is_short,
+                youtube_channels.channel_id,
                 youtube_channels.name AS channel_name
             FROM youtube_videos
             JOIN youtube_channels
@@ -63,17 +130,34 @@ export default async function Home({ searchParams }) {
             WHERE youtube_channels.enabled = 1
             ${typeFilter}
             ORDER BY youtube_videos.published_at DESC
-            LIMIT ${settings.feed_size}
+            LIMIT ${settings.feed_size + 1}
+            OFFSET ${offset}
         `)
     .all();
 
+  const lastSync = db
+    .prepare(`
+            SELECT MAX(fetched_at) AS last_synced_at
+            FROM youtube_videos
+        `)
+    .get();
+
   db.close();
+
+  const hasNextPage = videos.length > settings.feed_size;
+  const displayedVideos = videos.slice(0, settings.feed_size);
 
   return (
     <>
       <header>
         <h1>YouTube Feed</h1>
         <p>Recent uploads from your subscriptions.</p>
+
+        {lastSync?.last_synced_at && (
+          <p>
+            Last synced {formatRelativeTime(lastSync.last_synced_at)}
+          </p>
+        )}
 
         <nav aria-label="Feed type">
           <ul>
@@ -110,10 +194,10 @@ export default async function Home({ searchParams }) {
       </header>
 
       <section>
-        {videos.length === 0 ? (
+        {displayedVideos.length === 0 ? (
           <p>No videos found.</p>
         ) : (
-          videos.map((video) => (
+          displayedVideos.map((video) => (
             <article key={video.video_id}>
               <h2>
                 <a
@@ -126,14 +210,41 @@ export default async function Home({ searchParams }) {
               </h2>
 
               <p>
-                <strong>{video.channel_name}</strong>
+                <strong>
+                  <a
+                    href={`https://www.youtube.com/channel/${video.channel_id}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                  >
+                    {video.channel_name}
+                  </a>
+                </strong>
                 <br />
-                {video.published_at}
+                {formatRelativeTime(video.published_at)}
               </p>
             </article>
           ))
         )}
       </section>
+      <nav aria-label="Feed pagination">
+        <ul>
+          {page > 1 && (
+            <li>
+              <Link href={`/?type=${type}&page=${page - 1}`}>
+                Previous
+              </Link>
+            </li>
+          )}
+
+          {hasNextPage && (
+            <li>
+              <Link href={`/?type=${type}&page=${page + 1}`}>
+                Next
+              </Link>
+            </li>
+          )}
+        </ul>
+      </nav>
       <footer>
         <Link href="/settings">
           Go to settings
