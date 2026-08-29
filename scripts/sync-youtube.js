@@ -3,6 +3,28 @@ import { google } from 'googleapis';
 import { openDatabase } from '../lib/db.js';
 import { createYouTubeOAuthClient } from '../lib/youtube-auth.js';
 
+//helper functions
+
+async function getAllSubscriptions(youtube) {
+    const subscriptions = [];
+    let pageToken;
+
+    do {
+        const response = await youtube.subscriptions.list({
+            part: ['snippet', 'contentDetails'],
+            mine: true,
+            maxResults: 50,
+            pageToken,
+        });
+
+        subscriptions.push(...(response.data.items ?? []));
+
+        pageToken = response.data.nextPageToken;
+    } while (pageToken);
+
+    return subscriptions;
+}
+
 async function getUploadsPlaylistId(youtube, channelId) {
     const response = await youtube.channels.list({
         part: ['contentDetails'],
@@ -66,14 +88,9 @@ try {
         auth: oauth2Client,
     });
 
-    // Get the first page of subscriptions.
-    const response = await youtube.subscriptions.list({
-        part: ['snippet', 'contentDetails'],
-        mine: true,
-        maxResults: 50,
-    });
-
-    console.log(`Found ${response.data.items.length} subscriptions.`);
+    // Get subscriptions.
+    const subscriptions = await getAllSubscriptions(youtube);
+    console.log(`Found ${subscriptions.length} subscriptions.`);
 
     const upsertChannel = db.prepare(`
         INSERT INTO youtube_channels (
@@ -89,7 +106,7 @@ try {
             updated_at = CURRENT_TIMESTAMP
     `);
 
-    for (const subscription of response.data.items) {
+    for (const subscription of subscriptions) {
         const channelId = subscription.snippet.resourceId.channelId;
         const channelName = subscription.snippet.title;
         upsertChannel.run(channelId, channelName);
