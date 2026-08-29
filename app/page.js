@@ -6,11 +6,29 @@ export default async function Home({ searchParams }) {
 
   const validTypes = ["all", "videos", "shorts"];
 
-  const type = validTypes.includes(params?.type)
-    ? params.type
-    : "all";
-
   const db = openDatabase();
+
+  const settings = db
+    .prepare(`
+        SELECT
+            feed_size,
+            default_view,
+            shorts_behavior
+        FROM app_settings
+        WHERE id = 1
+    `)
+    .get();
+
+  let type = validTypes.includes(params?.type)
+    ? params.type
+    : settings.default_view;
+
+  if (
+    settings.shorts_behavior === "hide" &&
+    type === "shorts"
+  ) {
+    type = "videos";
+  }
 
   let typeFilter = "";
 
@@ -20,6 +38,13 @@ export default async function Home({ searchParams }) {
 
   if (type === "shorts") {
     typeFilter = "AND youtube_videos.is_short = 1";
+  }
+
+  if (
+    type === "all" &&
+    settings.shorts_behavior === "hide"
+  ) {
+    typeFilter = "AND youtube_videos.is_short = 0";
   }
 
   const videos = db
@@ -38,7 +63,7 @@ export default async function Home({ searchParams }) {
             WHERE youtube_channels.enabled = 1
             ${typeFilter}
             ORDER BY youtube_videos.published_at DESC
-            LIMIT 50
+            LIMIT ${settings.feed_size}
         `)
     .all();
 
@@ -49,13 +74,12 @@ export default async function Home({ searchParams }) {
       <header>
         <h1>YouTube Feed</h1>
         <p>Recent uploads from your subscriptions.</p>
-        <p>Current type: {type}</p>
 
         <nav aria-label="Feed type">
           <ul>
             <li>
               <Link
-                href="/"
+                href="/?type=all"
                 aria-current={type === "all" ? "page" : undefined}
               >
                 All
@@ -71,14 +95,16 @@ export default async function Home({ searchParams }) {
               </Link>
             </li>
 
-            <li>
-              <Link
-                href="/?type=shorts"
-                aria-current={type === "shorts" ? "page" : undefined}
-              >
-                Shorts
-              </Link>
-            </li>
+            {settings.shorts_behavior !== "hide" && (
+              <li>
+                <Link
+                  href="/?type=shorts"
+                  aria-current={type === "shorts" ? "page" : undefined}
+                >
+                  Shorts
+                </Link>
+              </li>
+            )}
           </ul>
         </nav>
       </header>
@@ -108,6 +134,11 @@ export default async function Home({ searchParams }) {
           ))
         )}
       </section>
+      <footer>
+        <Link href="/settings">
+          Go to settings
+        </Link>
+      </footer>
     </>
   );
 }

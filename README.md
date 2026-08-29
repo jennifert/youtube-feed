@@ -19,9 +19,9 @@ The project is designed to keep the web interface separate from YouTube itself: 
 
 🚧 **Early development**
 
-The database, YouTube OAuth flow, subscription import, recent-upload synchronization, and manual sync command are working.
+The database, YouTube OAuth flow, subscription import, recent-upload synchronization, manual sync command, feed UI, and settings system are working.
 
-The next development stage is building the Next.js feed UI from the local SQLite database.
+The next development stage is polishing the feed UI and improving presentation.
 
 ## Current Features
 
@@ -36,6 +36,9 @@ The next development stage is building the Next.js feed UI from the local SQLite
 - Simple text-focused subscription feed
 - Direct links to videos on YouTube
 - Separate views for regular videos and Shorts
+- Configurable feed size
+- Configurable default feed view
+- Configurable Shorts visibility
 
 ## Planned Features
 
@@ -261,7 +264,7 @@ Anyone cloning the project should configure their own Google API credentials, au
 - Add All, Videos, and Shorts views
 - Support filtering the feed by video type
 
-### MVP 5 — Settings
+### MVP 5 — Settings ✅
 
 - Add a settings page
 - Configure feed size
