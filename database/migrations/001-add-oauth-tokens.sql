@@ -1,4 +1,4 @@
-CREATE TABLE oauth_tokens (
+CREATE TABLE IF NOT EXISTS oauth_tokens (
   provider TEXT PRIMARY KEY,
   access_token TEXT,
   refresh_token TEXT,

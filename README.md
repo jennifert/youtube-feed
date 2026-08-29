@@ -239,16 +239,16 @@ Anyone cloning the project should configure their own Google API credentials, au
 - Store results in SQLite
 - Prevent duplicate channel and video records
 
-### MVP 3 — Feed
+### MVP 3 — Feed ✅
 
 - Display recent uploads from SQLite
 - Sort newest first
 - Display channel, video title, and publication date
 - Link directly to YouTube
 
-### MVP 4 — Videos and Shorts
+### MVP 4 — Videos and Shorts ✅
 
-- Identify Shorts where possible
+- Identify likely Shorts using available API data
 - Add All, Videos, and Shorts views
 - Add configurable Shorts behaviour
 

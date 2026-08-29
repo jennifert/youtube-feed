@@ -15,6 +15,8 @@ CREATE TABLE IF NOT EXISTS youtube_videos (
   published_at TEXT NOT NULL,
   thumbnail_url TEXT,
   url TEXT NOT NULL,
+  duration_seconds INTEGER,
+  is_short INTEGER NOT NULL DEFAULT 0,
   fetched_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
 
   FOREIGN KEY (channel_id)

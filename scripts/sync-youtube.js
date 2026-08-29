@@ -1,7 +1,11 @@
+import dotenv from 'dotenv';
+
 import { google } from 'googleapis';
 
 import { openDatabase } from '../lib/db.js';
 import { createYouTubeOAuthClient } from '../lib/youtube-auth.js';
+
+dotenv.config({ path: '.env.local' });
 
 //helper functions
 
@@ -46,6 +50,35 @@ async function getRecentUploads(youtube, playlistId) {
         maxResults: 10,
     });
     return response.data.items ?? [];
+}
+
+async function getVideoDetails(youtube, videoIds) {
+    const response = await youtube.videos.list({
+        part: ['contentDetails'],
+        id: videoIds,
+    });
+
+    return response.data.items ?? [];
+}
+
+function durationToSeconds(duration) {
+    if (!duration) {
+        return null;
+    }
+
+    const match = duration.match(
+        /^PT(?:(\d+)H)?(?:(\d+)M)?(?:(\d+)S)?$/
+    );
+
+    if (!match) {
+        return null;
+    }
+
+    const hours = Number(match[1] ?? 0);
+    const minutes = Number(match[2] ?? 0);
+    const seconds = Number(match[3] ?? 0);
+
+    return (hours * 3600) + (minutes * 60) + seconds;
 }
 
 const db = openDatabase();
@@ -135,15 +168,19 @@ try {
         published_at,
         thumbnail_url,
         url,
+        duration_seconds,
+        is_short,
         fetched_at
     )
-    VALUES (?, ?, ?, ?, ?, ?, CURRENT_TIMESTAMP)
+    VALUES (?, ?, ?, ?, ?, ?, ?, ?, CURRENT_TIMESTAMP)
     ON CONFLICT(video_id) DO UPDATE SET
         channel_id = excluded.channel_id,
         title = excluded.title,
         published_at = excluded.published_at,
         thumbnail_url = excluded.thumbnail_url,
         url = excluded.url,
+        duration_seconds = excluded.duration_seconds,
+        is_short = excluded.is_short,
         fetched_at = CURRENT_TIMESTAMP
     `);
 
@@ -163,10 +200,38 @@ try {
             uploadsPlaylistId
         );
 
+        const videoIds = uploads
+            .map((item) => item.contentDetails.videoId)
+            .filter(Boolean);
+
+        const videoDetails =
+            videoIds.length > 0
+                ? await getVideoDetails(youtube, videoIds)
+                : [];
+                
+        const detailsByVideoId = new Map(
+            videoDetails.map((video) => [
+                video.id,
+                video.contentDetails
+            ])
+        );
+
         console.log(`Recent uploads from ${channel.name}:`);
 
         for (const item of uploads) {
             const videoId = item.contentDetails.videoId;
+
+            const details = detailsByVideoId.get(videoId);
+
+            const durationSeconds = durationToSeconds(
+                details?.duration
+            );
+
+            const isShort =
+                durationSeconds !== null &&
+                    durationSeconds <= 180
+                    ? 1
+                    : 0;
 
             const thumbnailUrl =
                 item.snippet.thumbnails?.medium?.url ??
@@ -182,7 +247,9 @@ try {
                 item.snippet.title,
                 item.contentDetails.videoPublishedAt,
                 thumbnailUrl,
-                videoUrl
+                videoUrl,
+                durationSeconds,
+                isShort
             );
             console.log(`Saved video: ${item.snippet.title}`);
         }
