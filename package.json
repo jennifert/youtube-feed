@@ -1,0 +1,41 @@
+{
+  "name": "youtube-feed",
+  "version": "0.1.0",
+  "private": true,
+  "description": "A local-first YouTube subscription feed using Next.js, SQLite, and the YouTube Data API.",
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "lint": "eslint",
+    "db:init": "node scripts/init-db.js",
+    "sync": "node scripts/sync-youtube.js"
+  },
+  "keywords": [
+    "nextjs",
+    "youtube",
+    "youtube-api",
+    "sqlite",
+    "local-first"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/jennifert/youtube-feed.git"
+  },
+  "author": "Jennifer Tesolin",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/jennifert/youtube-feed/issues"
+  },
+  "homepage": "https://github.com/jennifert/youtube-feed/#readme",
+  "dependencies": {
+    "better-sqlite3": "^13.0.3",
+    "next": "16.3.3",
+    "react": "19.2.8",
+    "react-dom": "19.2.8"
+  },
+  "devDependencies": {
+    "eslint": "^9",
+    "eslint-config-next": "16.3.3"
+  }
+}
