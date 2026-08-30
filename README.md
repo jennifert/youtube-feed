@@ -279,7 +279,7 @@ Anyone cloning the project should configure their own Google API credentials, au
 ### MVP 6 — Feed Polish ✅
 
 - Relative publication times
-- Pagination or load-more support
+- Previous and next feed pagination
 - Channel links
 - Empty and error states
 - Last synchronization information
