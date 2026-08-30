@@ -7,7 +7,7 @@
 [![SQLite](https://img.shields.io/badge/SQLite-local--first-003B57?logo=sqlite)](https://sqlite.org/)
 [![YouTube Data API](https://img.shields.io/badge/YouTube-Data_API_v3-red?logo=youtube)](https://developers.google.com/youtube/v3)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](./LICENSE)
-[![Release](https://img.shields.io/github/v/release/jennifert/youtube-feed?include_prereleases&label=release)](https://github.com/jennifert/youtube-feed/releases)
+[![Release](https://img.shields.io/github/v/tag/jennifert/youtube-feed?include_prereleases&label=release)](https://github.com/jennifert/youtube-feed/releases)
 
 A local-first YouTube subscription feed built with Next.js, SQLite, and the YouTube Data API.
 
