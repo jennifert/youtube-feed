@@ -1,6 +1,6 @@
 {
   "name": "youtube-feed",
-  "version": "0.1.0",
+  "version": "0.6.0",
   "private": true,
   "description": "A local-first YouTube subscription feed using Next.js, SQLite, and the YouTube Data API.",
   "type": "module",
