@@ -287,8 +287,10 @@ Anyone cloning the project should configure their own Google API credentials, au
 
 ### MVP 7 — Scheduled Sync
 
+- Prepare synchronization for unattended execution
 - Add optional scheduled synchronization
-- Document cron/systemd configuration
+- Document macOS launchd configuration
+- Document Linux systemd/cron configuration
 - Keep manual synchronization available
 
 ### MVP 8 — Status Board Integration
